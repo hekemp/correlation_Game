@@ -1,9 +1,25 @@
 var myCorrelation = 0.00;
-var mySampleSize = 50;
+var mySampleSize = 100;
 var initialValue = 0.00;
 
 var xValues = [];
 var yValues = [];
+
+var rValueChoices = [-.99, -.9, -.8, -.7, -.6, -.5, -.3, 0.0, .3, .5, .6, .7, .8, .9, .99];
+var correctRange = [-1.0,-.98, -.93, -.87, -.83, -.77, -.74, -.66, -.64,-.56, -.55, -.45, -.35, -.25, -.1, .1, .25, .35, .45, .55, .56, .64, .66, .74, .77, .83, .87, .93, .98, 1.0];
+var closeRange = [-1.0, -.95, -.96, -.84, -.87, -.73, -.78, -.62, -.69, -.51, -.6, -.4, -.4, -.2, -.2, .2, .2, .4, .4, .6, .51, .69, .62, .78, .73, .87, .84, .96, .95, 1.0];
+
+var actualR = 0;
+var answerChecked = false;
+
+var timesGuessedXAxis = []
+var differenceGuessedYAxis = []
+
+var actualValueXAxis = []
+var guessedValueYAxis = []
+
+/// guess vs actual graphing (line from -2 to 2)
+// guess - actual vs trials (line from 0 - end)
 
 // See https://github.com/tulip/multivariate-normal-js for MVN
 
@@ -40,11 +56,11 @@ function roundForDisplay(value, decimals){
 
 // window.MultivariateNormal.default instead of mvn
 
-var setSampleSize = function(size){
-  mySampleSize = size;
-  getNewSamples();
-  drawChart2D();
-}
+//var setSampleSize = function(size){
+//  mySampleSize = size;
+//  getNewSamples();
+//  drawChart2D();
+//}
 
 var getNewSample = function(){
 
@@ -54,8 +70,8 @@ var getNewSample = function(){
   // covariance between dimensions. This examples makes the first and third
   // dimensions highly correlated, and the second dimension independent.
   var covarianceMatrix = [
-      [ 1.0, myCorrelation],
-      [ myCorrelation, 1.0],
+      [ 1.0, actualR],
+      [ actualR, 1.0],
   ];
 
   var distribution = window.MultivariateNormal.default(meanVector, covarianceMatrix);
@@ -150,10 +166,6 @@ function setSliderTicks(){
 
         $('.ui-slider-handle').html(tooltip);
 
-        getNewSamples();
-
-        drawChart2D();
-
     }
 
     var sliderTooltipCreate = function(event, ui) {
@@ -204,6 +216,8 @@ var drawChart2D = function() {
 	        marker: { opacity: 0.7 }
 	    }];
 
+			Plotly.purge("renderTarget")
+
 	    Plotly.newPlot("renderTarget", data,
       {
   				title:'',
@@ -239,11 +253,222 @@ var drawChart2D = function() {
             pad: 4
           }
   			});
-      console.log("done");
+
+
 };
 
+var drawBottomGraphs = function() {
+
+	// trackedDifference
+
+	var maxValue = 20
+	if(timesGuessedXAxis.length > 20){
+		maxValue = timesGuessedXAxis.length
+	}
+
+	var data = [{
+			x: timesGuessedXAxis,
+			y: differenceGuessedYAxis,
+			mode: "markers",
+			type: "scattergl",
+			marker: { opacity: 0.7 }
+	}];
+
+	Plotly.purge("trackedDifference")
+
+	console.log("Purge 1st")
+
+	Plotly.newPlot("trackedDifference", data,
+	{
+			title:'',
+			xaxis: {
+					zeroline: false,
+					title: 'Trial',
+					range: [-0.3, maxValue],
+					autotick: false,
+					ticks: 'outside',
+					tick0: 0,
+					dtick: 5,
+					ticklen: 8,
+					tickwidth: 0,
+					tickcolor: '#000'},
+			yaxis:{
+					title:'Difference (Guess - Actual)',
+					range: [-1,1],
+					autotick: false,
+					ticks: '',
+					tick0: 0,
+					dtick: .5,
+					ticklen: 8,
+					tickwidth: 0,
+					tickcolor: '#000'},
+			font: {
+					size: 16,
+					family: 'Roboto Slab, serif',
+					color: '#3B317D'},
+			margin: {
+				l: 80,
+				r: 50,
+				b: 70,
+				t: 50,
+				pad: 5
+			}
+		});
+
+// 	var data2 = [{
+// 			x: actualValueXAxis,
+// 			y: guessedValueYAxis,
+// 			mode: "markers",
+// 			type: "scattergl",
+// 			marker: { opacity: 0.7 }
+// 	}
+//
+// ];
+
+var trace1 = {
+  x: actualValueXAxis,
+  y: guessedValueYAxis,
+  mode: 'markers',
+	type: "scattergl",
+	name: '',
+};
+
+var correctLine = {
+  x: [-5, 5],
+  y: [-5, 5],
+  mode: 'lines',
+	line: {
+    color: 'rgb(55, 128, 191)',
+    width: 1
+  },
+	type: "scattergl",
+	name: '',
+};
+
+var data2 = [ trace1, correctLine ];
+
+	Plotly.purge("actualVSguess")
+
+	console.log("Purge 2nd")
+
+	Plotly.newPlot("actualVSguess", data2,
+	{
+			title:'',
+			xaxis: {
+
+					zeroline: false,
+					title: 'Actual',
+					range: [-1, 1],
+					autotick: false,
+					ticks: 'outside',
+					tick0: 0,
+					dtick: .5,
+					ticklen: 8,
+					tickwidth: 0,
+					tickcolor: '#000'},
+			yaxis:{
+
+    			zeroline: false,
+
+
+					title:'Guess',
+					range: [-1,1],
+					autotick: false,
+					ticks: '',
+					tick0: 0,
+					dtick: .5,
+					ticklen: 8,
+					tickwidth: 0,
+					tickcolor: '#000'},
+			font: {
+					size: 16,
+					family: 'Roboto Slab, serif',
+					color: '#3B317D'},
+			margin: {
+				l: 80,
+				r: 50,
+				b: 70,
+				t: 50,
+				pad: 5
+			},
+			showlegend: false
+		});
+
+}
+
+var getANewGraph = function() {
+	answerChecked = false;
+	actualR = rValueChoices[Math.floor(Math.random()*rValueChoices.length)];
+	document.getElementById('result').innerHTML = '&nbsp;';
+	getNewSamples();
+	drawChart2D();
+}
+
+var resetMyHistory = function(){
+
+	getANewGraph()
+
+	timesGuessedXAxis = []
+	differenceGuessedYAxis = []
+
+	actualValueXAxis = []
+	guessedValueYAxis = []
+
+	console.log("Reset")
+	console.log(timesGuessedXAxis)
+	console.log(differenceGuessedYAxis)
+
+	drawBottomGraphs()
+}
+
+var checkMyAnswer = function(){
+
+	if(!answerChecked){
+
+		answerChecked = true;
+
+		var minCorrect = correctRange[rValueChoices.indexOf(actualR)*2]
+		var maxCorrect = correctRange[rValueChoices.indexOf(actualR)*2 + 1]
+
+		var minClose = closeRange[rValueChoices.indexOf(actualR)*2]
+		var maxClose = closeRange[rValueChoices.indexOf(actualR)*2 + 1]
+
+		timesGuessedXAxis.push(timesGuessedXAxis.length)
+		differenceGuessedYAxis.push(myCorrelation - actualR)
+
+		actualValueXAxis.push(actualR)
+		guessedValueYAxis.push(myCorrelation)
+
+		drawBottomGraphs()
+
+		if(minCorrect <= myCorrelation && myCorrelation <= maxCorrect){ // you were right!
+			document.getElementById('result').innerHTML = "<font color='green'>That's correct! r = " + roundForDisplay(actualR,2) + "</font>";
+		}
+		else if(minClose <= myCorrelation && myCorrelation <= maxClose){ // you were close!
+			document.getElementById('result').innerHTML = "<font color='#C9960C'>You were close! r = " + roundForDisplay(actualR,2) + "</font>";
+		}
+		else if(Math.abs(actualR - myCorrelation) >= .99){ // critical wrong
+			document.getElementById('result').innerHTML = "<font color='red'>That was a critical failure! Your guess was way off! r = " + roundForDisplay(actualR,2) + "</font>";
+		}
+		else{ //wrong, but not critical
+			document.getElementById('result').innerHTML = "<font color='red'>That's incorrect. r = " + roundForDisplay(actualR,2) + "</font>";
+		}
+
+	}
+	else{
+		document.getElementById('result').innerHTML = "You've already made a guess for this graph! Get a new plot to continue!";
+	}
+
+}
 
 $( document ).ready(function() {
-    getNewSamples();
+
+	(document.getElementById("checkAnswer")).onclick = checkMyAnswer;
+	(document.getElementById("getNewPlot")).onclick = getANewGraph;
+	(document.getElementById("resetHistory")).onclick = resetMyHistory;
+
+    getANewGraph();
     drawChart2D();
+		drawBottomGraphs();
+
 });

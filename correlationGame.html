@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Correlation Visualization</title>
+        <title>Correlation Game</title>
 
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -16,31 +16,38 @@
     </head>
     <body>
 
-      <h1><center>Illustrating Correlation in Data</center></h1>
-      <div id ="leftPage" style="width: 48%; float: left; overflow: auto; position: relative; background: #E8E8E8; margin-left: 2%; margin-right: 2%; margin-top: 30px; padding:10px 20px;">
-        <h3> Correlation</h3>
+      <h1><center>Test Yourself - Guess the Correlation</center></h1>
+      <div id ="leftPage" style="width: 48%; float: left; overflow: auto; position: relative; background: #E8E8E8; margin-left: 2%; margin-right: 2%; margin-top: 30px; padding:10px 20px; padding-bottom:1.5em;">
+        <h3> Slide the bar so it matches your best guess for the Pearson product-moment correlation coefficient represented in the scatterplot to the right.</h3>
         <div id="slider"></div>
 
         <br/>
 
-        <h3> Number of Observations</h3>
+        <span id="result"> &nbsp; </span>
+
         <center>
         <div id="sizeButtons">
           <form action="">
-            <input type="Radio" name="sampleSize" value="10" onclick=setSampleSize(10)>10
-            <input type="Radio" name="sampleSize" value="25" onclick=setSampleSize(25)>25
-            <input type="Radio" name="sampleSize" value="50" onclick=setSampleSize(50) checked="checked">50
-            <input type="Radio" name="sampleSize" value="100" onclick=setSampleSize(100)>100
+            <button type="button" class="button" id="checkAnswer">Check Answer</button>
+            <button type="button" class="button" id="getNewPlot">Get New Plot</button>
+            <button type="button" class="button" id="resetHistory">Reset History</button>
+
           </form>
         </div>
       </center>
-        <p>Note: The observations are distributed according to a standard normal distribution with correlation r.</p>
-      </div>
+        </div>
     </div>
+
 
       <div id ="halfPageGraphs" style="width 50%; margin-left: 50%; overflow: auto;">
         <div id="renderTarget"></div>
       </div>
+
+      <div id="bottomGraphs" style="width: 100%;">
+          <div id="actualVSguess" style="width: 50%; display: inline !important; float: left;"></div>
+          <div id="trackedDifference" style="width: 50%; display: inline !important; float: right; margin-bottom: 3em;"></div>
+      </div>
+
 
     </body>
 </html>

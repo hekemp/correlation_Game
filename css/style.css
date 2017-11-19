@@ -5,6 +5,7 @@
   background: white;
   z-index: 3;
   height: 15px;
+  margin-top: 2em;
 }
 
 
@@ -111,17 +112,17 @@ h4{
 	}
 
 
-	 .button {
-	     background-color: #E8E8E8;
-	     border: none;
-			 font: 1em Roboto Slab, serif;
-		   color:#3B317D;
-			 border: 1px solid gray;
-	     padding: 10px 15px;
-	     text-align: center;
-	     text-decoration: none;
-	     display: inline-block;
-	     font-size: 16px;
-	 }
+  .button {
+      background-color: #FED8B1;
+      border: none;
+      font: 1em Roboto Slab, serif;
+      color:#3B317D;
+      border: 1px solid gray;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+  }
 
 }
