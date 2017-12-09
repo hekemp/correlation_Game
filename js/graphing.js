@@ -7,10 +7,16 @@ var yValues = [];
 
 var rValueChoices = [-.99, -.9, -.8, -.7, -.6, -.5, -.3, 0.0, .3, .5, .6, .7, .8, .9, .99];
 var correctRange = [-1.0,-.98, -.93, -.87, -.83, -.77, -.74, -.66, -.64,-.56, -.55, -.45, -.35, -.25, -.1, .1, .25, .35, .45, .55, .56, .64, .66, .74, .77, .83, .87, .93, .98, 1.0];
-var closeRange = [-1.0, -.95, -.96, -.84, -.87, -.73, -.78, -.62, -.69, -.51, -.6, -.4, -.4, -.2, -.2, .2, .2, .4, .4, .6, .51, .69, .62, .78, .73, .87, .84, .96, .95, 1.0];
+
+var closeRange = [-1.0, -.91, -.96, -.79, -.87, -.68, -.78, -.57, -.69, -.46, -.6, -.3, -.4, -.14, -.2, .2, .14, .4, .3, .6, .46, .69, .57, .78, .68, .87, .79, .96, .91, 1.0];
+
+
+
+
 
 var actualR = 0;
 var answerChecked = false;
+var calculatedR = 0;
 
 var timesGuessedXAxis = []
 var differenceGuessedYAxis = []
@@ -80,6 +86,8 @@ var getNewSample = function(){
     x: currentSample[0],
     y: currentSample[1]
     };
+
+
 }
 
 
@@ -203,6 +211,9 @@ var getNewSamples = function(){
     xValues[i] = currentSample.x;
     yValues[i] = currentSample.y;
   }
+	calculatedR = ss.sampleCorrelation(xValues, yValues)
+	calculatedR = round(calculatedR,2)
+
 }
 
 // draw charts with Plotly
@@ -257,6 +268,77 @@ var drawChart2D = function() {
 
 };
 
+var drawChart2DWithLine = function() {
+
+	    var data = {
+	        x: xValues,
+	        y: yValues,
+	        mode: "markers",
+	        type: "scattergl",
+	        marker: { opacity: 0.7 }
+	    };
+
+			var l = ss.linearRegressionLine({ b: 0, m: calculatedR })
+
+
+			var correctLine = {
+				x: [-10, 10],
+				y: [l(-10), l(10)],
+				mode: 'lines',
+				line: {
+					color: '#FF6000',
+					width: 1
+				},
+				type: "scattergl",
+				name: '',
+			};
+
+			var data2 = [ data, correctLine ];
+
+
+			Plotly.purge("renderTarget")
+
+	    Plotly.newPlot("renderTarget", data2,
+      {
+  				title:'',
+					showlegend: false,
+  				xaxis: {
+  						title: '',
+  						range: [-4, 4],
+  						autotick: false,
+  						ticks: 'outside',
+  						tick0: 0,
+  						dtick: 2,
+  						ticklen: 8,
+  						tickwidth: 0,
+  						tickcolor: '#000'},
+  				yaxis:{
+  						title:'',
+  						range: [-4,4],
+  						autotick: false,
+  						ticks: '',
+  						tick0: 0,
+  						dtick: 2,
+  						ticklen: 8,
+  						tickwidth: 0,
+  						tickcolor: '#000'},
+  				font: {
+  						size: 16,
+  						family: 'Roboto Slab, serif',
+  						color: '#3B317D'},
+          margin: {
+            l: 50,
+            r: 50,
+            b: 50,
+            t: 50,
+            pad: 4
+          }
+  			});
+
+
+
+};
+
 var drawBottomGraphs = function() {
 
 	// trackedDifference
@@ -276,7 +358,6 @@ var drawBottomGraphs = function() {
 
 	Plotly.purge("trackedDifference")
 
-	console.log("Purge 1st")
 
 	Plotly.newPlot("trackedDifference", data,
 	{
@@ -349,8 +430,6 @@ var data2 = [ trace1, correctLine ];
 
 	Plotly.purge("actualVSguess")
 
-	console.log("Purge 2nd")
-
 	Plotly.newPlot("actualVSguess", data2,
 	{
 			title:'',
@@ -414,10 +493,6 @@ var resetMyHistory = function(){
 	actualValueXAxis = []
 	guessedValueYAxis = []
 
-	console.log("Reset")
-	console.log(timesGuessedXAxis)
-	console.log(differenceGuessedYAxis)
-
 	drawBottomGraphs()
 }
 
@@ -433,26 +508,37 @@ var checkMyAnswer = function(){
 		var minClose = closeRange[rValueChoices.indexOf(actualR)*2]
 		var maxClose = closeRange[rValueChoices.indexOf(actualR)*2 + 1]
 
-		timesGuessedXAxis.push(timesGuessedXAxis.length)
-		differenceGuessedYAxis.push(myCorrelation - actualR)
+		var difference = actualR - calculatedR
 
-		actualValueXAxis.push(actualR)
+		minCorrect = round(minCorrect - difference,2)
+		maxCorrect = round(maxCorrect - difference,2)
+
+		minClose = round(minClose - difference,2)
+		maxClose = round(maxClose - difference,2)
+
+
+		timesGuessedXAxis.push(timesGuessedXAxis.length)
+		differenceGuessedYAxis.push(myCorrelation - round(calculatedR,2))
+
+		actualValueXAxis.push(round(calculatedR,2))
 		guessedValueYAxis.push(myCorrelation)
 
 		drawBottomGraphs()
 
 		if(minCorrect <= myCorrelation && myCorrelation <= maxCorrect){ // you were right!
-			document.getElementById('result').innerHTML = "<font color='green'>That's correct! r = " + roundForDisplay(actualR,2) + "</font>";
+			document.getElementById('result').innerHTML = "<font color='green'>That's correct! r = " + roundForDisplay(calculatedR,2) + "</font>";
 		}
 		else if(minClose <= myCorrelation && myCorrelation <= maxClose){ // you were close!
-			document.getElementById('result').innerHTML = "<font color='#C9960C'>You were close! r = " + roundForDisplay(actualR,2) + "</font>";
+			document.getElementById('result').innerHTML = "<font color='#C9960C'>You were close! r = " + roundForDisplay(calculatedR,2) + "</font>";
 		}
-		else if(Math.abs(actualR - myCorrelation) >= .99){ // critical wrong
-			document.getElementById('result').innerHTML = "<font color='red'>That was a critical failure! Your guess was way off! r = " + roundForDisplay(actualR,2) + "</font>";
+		else if(Math.abs(round(calculatedR,2) - myCorrelation) >= .99){ // critical wrong
+			document.getElementById('result').innerHTML = "<font color='red'>That was a critical failure! Your guess was way off! r = " + roundForDisplay(calculatedR,2) + "</font>";
 		}
 		else{ //wrong, but not critical
-			document.getElementById('result').innerHTML = "<font color='red'>That's incorrect. r = " + roundForDisplay(actualR,2) + "</font>";
+			document.getElementById('result').innerHTML = "<font color='red'>r = " + roundForDisplay(calculatedR,2) + ". Want to try again?</font>";
 		}
+
+		drawChart2DWithLine()
 
 	}
 	else{
